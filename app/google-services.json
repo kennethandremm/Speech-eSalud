@@ -1,0 +1,73 @@
+{
+  "project_info": {
+    "project_number": "641009497696",
+    "firebase_url": "https://esalud-f8523.firebaseio.com",
+    "project_id": "esalud-f8523",
+    "storage_bucket": "esalud-f8523.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:641009497696:android:32a054806091e0b8",
+        "android_client_info": {
+          "package_name": "org.kenneth.esalud"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "641009497696-32r07l5h98ml32gp79cmhgj3d15v9ugo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4P89PW8Wv_3jNnieNWSwVys6xW6kj4dY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:641009497696:android:db68a6260753c6a1",
+        "android_client_info": {
+          "package_name": "com.google.cloud.android.speech"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "641009497696-32r07l5h98ml32gp79cmhgj3d15v9ugo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4P89PW8Wv_3jNnieNWSwVys6xW6kj4dY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
