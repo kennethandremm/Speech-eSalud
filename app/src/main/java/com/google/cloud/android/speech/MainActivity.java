@@ -40,6 +40,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import at.markushi.ui.CircleButton;
+
 
 public class MainActivity extends AppCompatActivity implements MessageDialogFragment.Listener {
 
@@ -88,6 +90,8 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
     private TextView mText;
     private ResultAdapter mAdapter;
     private RecyclerView mRecyclerView;
+    private CircleButton btnStop;
+    private CircleButton btnRec;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -114,7 +118,8 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         final Resources.Theme theme = getTheme();
         mColorHearing = ResourcesCompat.getColor(resources, R.color.status_hearing, theme);
         mColorNotHearing = ResourcesCompat.getColor(resources, R.color.status_not_hearing, theme);
-
+        btnRec = (CircleButton)findViewById(R.id.btnRec);
+        btnStop = (CircleButton)findViewById(R.id.btnStop);
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         mStatus = (TextView) findViewById(R.id.status);
         mText = (TextView) findViewById(R.id.text);
