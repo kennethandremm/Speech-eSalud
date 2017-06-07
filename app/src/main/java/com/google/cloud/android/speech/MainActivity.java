@@ -142,7 +142,23 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         // Start listening to voices
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED) {
-            startVoiceRecorder();
+
+            btnRec.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    startVoiceRecorder();
+                    return false;
+                }
+            });
+
+            btnStop.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    stopVoiceRecorder();
+                }
+            });
+
+
         } else if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                 Manifest.permission.RECORD_AUDIO)) {
             showPermissionMessageDialog();
@@ -154,8 +170,8 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
 
     @Override
     protected void onStop() {
+
         // Stop listening to voice
-        stopVoiceRecorder();
 
         // Stop Cloud Speech API
         mSpeechService.removeListener(mSpeechServiceListener);
