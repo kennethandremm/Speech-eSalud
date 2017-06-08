@@ -14,7 +14,7 @@
   limitations under the License.
 -->
 <resources>
-    <string name="app_name">Speech</string>
+    <string name="app_name">Speech eSalud</string>
     <string name="permission_message">This app needs to record audio and recognize your speech.</string>
     <string name="listening">Presiona para escuchar al paciente...</string>
 

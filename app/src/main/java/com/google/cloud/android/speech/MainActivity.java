@@ -27,9 +27,13 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -42,14 +46,37 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnPausedListener;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageMetadata;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import at.markushi.ui.CircleButton;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+import static com.google.cloud.android.speech.R.id.container;
 
 
 public class MainActivity extends AppCompatActivity implements MessageDialogFragment.Listener {
@@ -61,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 
     private SpeechService mSpeechService;
-
+    private MediaRecorder grabacion;
     private VoiceRecorder mVoiceRecorder;
     private final VoiceRecorder.Callback mVoiceCallback = new VoiceRecorder.Callback() {
 
@@ -101,7 +128,8 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
     private RecyclerView mRecyclerView;
     private CircleButton btnStop;
     private CircleButton btnRec;
-
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    FirebaseStorage storage = FirebaseStorage.getInstance();
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
@@ -123,6 +151,11 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (user != null) {
+            String name = user.getDisplayName();
+            String email = user.getEmail();
+            Toast.makeText(getApplicationContext(), "Bienvenido a Speech eSalud, " + user.getDisplayName(), Toast.LENGTH_LONG).show();
+        }
         final Resources resources = getResources();
         final Resources.Theme theme = getTheme();
         mColorHearing = ResourcesCompat.getColor(resources, R.color.accent, theme);
@@ -139,14 +172,62 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                 savedInstanceState.getStringArrayList(STATE_RESULTS);
         mAdapter = new ResultAdapter(results);
         mRecyclerView.setAdapter(mAdapter);
+        Date fecha;
+        String outputFile = null;
+
+        //agregar fecha para identificar los diferentes audios
+        fecha = new Date();
+
+        File folder = new File(Environment.getExternalStorageDirectory() + "/eSalud");
+        boolean success = true;
+        if (!folder.exists()) {
+            Toast.makeText(MainActivity.this, "Directory Does Not Exist, Create It", Toast.LENGTH_SHORT).show();
+            success = folder.mkdir();
+        }
+        if (success) {
+            outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() +"/eSalud/"+fecha+".mp3";
+            Toast.makeText(MainActivity.this, outputFile, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(MainActivity.this, "Failed - Error", Toast.LENGTH_SHORT).show();
+        }
+
+
+        grabacion = new MediaRecorder();
+        grabacion.setAudioSource(MediaRecorder.AudioSource.MIC);
+        grabacion.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        grabacion.setAudioEncoder(MediaRecorder.OutputFormat.MPEG_4);
+        grabacion.setOutputFile(outputFile);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
+        final MediaRecorder grabacion;
+        String outputFile = new String();
         // Prepare Cloud Speech API
         bindService(new Intent(this, SpeechService.class), mServiceConnection, BIND_AUTO_CREATE);
+        //agregar fecha para identificar los diferentes audios
+        final Date fecha = new Date();
+
+        File folder = new File(Environment.getExternalStorageDirectory() + "/eSalud");
+        boolean success = true;
+        if (!folder.exists()) {
+            //Toast.makeText(MainActivity.this, "Directory Does Not Exist, Create It", Toast.LENGTH_SHORT).show();
+            success = folder.mkdir();
+        }
+        if (success) {
+             outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() +"/eSalud/"+fecha+".mp3";
+            //Toast.makeText(getActivity(), outputFile, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(MainActivity.this, "Failed - Error", Toast.LENGTH_SHORT).show();
+        }
+
+
+        grabacion = new MediaRecorder();
+        grabacion.setAudioSource(MediaRecorder.AudioSource.MIC);
+        grabacion.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        grabacion.setAudioEncoder(MediaRecorder.OutputFormat.MPEG_4);
+        grabacion.setOutputFile(outputFile);
 
         // Start listening to voices
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
@@ -160,6 +241,13 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                     View sbView = snackbar.getView();
                     sbView.setBackgroundColor(getResources().getColor(R.color.primary));
                     snackbar.show();
+                    try {
+                        grabacion.prepare();
+                        grabacion.start();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     btnStop.setEnabled(true);
                     return false;
                 }
@@ -169,11 +257,44 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                 @Override
                 public void onClick(View v) {
                     stopVoiceRecorder();
+                    grabacion.stop();
+                    grabacion.release();
                     Snackbar snackbar = Snackbar.make(v, "¡He dejado de escuchar!", Snackbar.LENGTH_LONG)
                             .setAction("Action", null);
                     View sbView = snackbar.getView();
                     sbView.setBackgroundColor(getResources().getColor(R.color.primary));
                     snackbar.show();
+                    StorageReference storageRef = storage.getReferenceFromUrl("gs://esalud-f8523.appspot.com");
+                    Uri file = Uri.fromFile(new File("storage/emulated/0/eSalud/"+fecha+".mp3"));
+
+                    // Create the file metadata
+                    StorageMetadata metadata = new StorageMetadata.Builder()
+                            .setContentType("audio/mpeg")
+                            .build();
+                    // Upload file and metadata to the path 'audio/audio.mp3'
+                    UploadTask uploadTask = storageRef.child("eSalud/"+file.getLastPathSegment()).putFile(file, metadata);
+                    uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+
+                            System.out.println("Upload is % IN PROGRESS");
+                        }
+                    }).addOnPausedListener(new OnPausedListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onPaused(UploadTask.TaskSnapshot taskSnapshot) {
+                            System.out.println("Upload is paused");
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Handle unsuccessful uploads
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            @SuppressWarnings("VisibleForTests") Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        }
+                    });
 
                     final ProgressDialog alertDialog = new ProgressDialog(MainActivity.this);
                     alertDialog.setMessage("Consultando a Watson");
