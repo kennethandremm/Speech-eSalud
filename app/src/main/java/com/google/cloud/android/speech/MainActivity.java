@@ -17,17 +17,25 @@
 package com.google.cloud.android.speech;
 
 import android.Manifest;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -142,11 +150,15 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         // Start listening to voices
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED) {
-
             btnRec.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
                     startVoiceRecorder();
+                    Snackbar snackbar = Snackbar.make(v, "¡Estoy escuchando!", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null);
+                    View sbView = snackbar.getView();
+                    sbView.setBackgroundColor(getResources().getColor(R.color.primary));
+                    snackbar.show();
                     return false;
                 }
             });
@@ -155,6 +167,40 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                 @Override
                 public void onClick(View v) {
                     stopVoiceRecorder();
+                    Snackbar snackbar = Snackbar.make(v, "¡He dejado de escuchar!", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null);
+                    View sbView = snackbar.getView();
+                    sbView.setBackgroundColor(getResources().getColor(R.color.primary));
+                    snackbar.show();
+                    ProgressDialog alertDialog = new ProgressDialog(MainActivity.this);
+                    alertDialog.setMessage("Consultando a Watson");
+                    alertDialog.setCancelable(true);
+                    alertDialog.show();
+
+                    AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
+                    builder1.setMessage("El paciente es diagnosticado con: ");
+                    builder1.setCancelable(true);
+
+                    builder1.setPositiveButton(
+                            "Aceptar",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+
+                    builder1.setNegativeButton(
+                            "Reintentar",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+
+                    AlertDialog alert11 = builder1.create();
+                    alert11.show();
+                    mStatus.setTextColor(mColorNotHearing);
+                    mStatus.setText("Presiona para escuchar al paciente...");
                 }
             });
 
@@ -240,7 +286,26 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},
                 REQUEST_RECORD_AUDIO_PERMISSION);
     }
-
+    public class FireMissilesDialogFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage("El Diagnostico es: ")
+                    .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // FIRE ZE MISSILES!
+                        }
+                    })
+                    .setNegativeButton("Reintentar", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
     private final SpeechService.Listener mSpeechServiceListener =
             new SpeechService.Listener() {
                 @Override
