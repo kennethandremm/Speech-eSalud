@@ -184,14 +184,14 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
 
         fecha = new Date();
 
-        File folder = new File(Environment.getExternalStorageDirectory() + "/eSalud");
+        File folder = new File(Environment.getExternalStorageDirectory() + "/eSaludos");
         boolean success = true;
         if (!folder.exists()) {
             //Toast.makeText(MainActivity.this, "Directory Does Not Exist, Create It", Toast.LENGTH_SHORT).show();
             success = folder.mkdir();
         }
         if (success) {
-            outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() +"/eSalud/"+fecha+".mp3";
+            outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() +"/eSaludos/"+fecha+".mp3";
             //Toast.makeText(MainActivity.this, outputFile, Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(MainActivity.this, "Failed - Error", Toast.LENGTH_SHORT).show();
@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                     try {
                         grabacion.prepare();
                         grabacion.start();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     btnStop.setEnabled(true);
@@ -230,15 +230,19 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                 @Override
                 public void onClick(View v) {
                     stopVoiceRecorder();
-                    grabacion.stop();
-                    grabacion.release();
+                    try {
+                        grabacion.stop();
+                        grabacion.release();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     Snackbar snackbar = Snackbar.make(v, "¡He dejado de escuchar!", Snackbar.LENGTH_LONG)
                             .setAction("Action", null);
                     View sbView = snackbar.getView();
                     sbView.setBackgroundColor(getResources().getColor(R.color.primary));
                     snackbar.show();
                     StorageReference storageRef = storage.getReferenceFromUrl("gs://esalud-f8523.appspot.com");
-                    Uri file = Uri.fromFile(new File("storage/emulated/0/eSalud/"+fecha+".mp3"));
+                    Uri file = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getAbsolutePath()+ "/eSaludos/"+fecha+".mp3"));
 
                     // Create the file metadata
                     StorageMetadata metadata = new StorageMetadata.Builder()
