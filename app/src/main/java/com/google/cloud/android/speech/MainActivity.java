@@ -86,10 +86,12 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
     private static final String STATE_RESULTS = "results";
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
-
+    Date fecha;
     private SpeechService mSpeechService;
     private MediaRecorder grabacion;
     private VoiceRecorder mVoiceRecorder;
+    private String outputFile = null;
+
     private final VoiceRecorder.Callback mVoiceCallback = new VoiceRecorder.Callback() {
 
         @Override
@@ -172,42 +174,15 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                 savedInstanceState.getStringArrayList(STATE_RESULTS);
         mAdapter = new ResultAdapter(results);
         mRecyclerView.setAdapter(mAdapter);
-        Date fecha;
-        String outputFile = null;
-
-        //agregar fecha para identificar los diferentes audios
-        fecha = new Date();
-
-        File folder = new File(Environment.getExternalStorageDirectory() + "/eSalud");
-        boolean success = true;
-        if (!folder.exists()) {
-            Toast.makeText(MainActivity.this, "Directory Does Not Exist, Create It", Toast.LENGTH_SHORT).show();
-            success = folder.mkdir();
-        }
-        if (success) {
-            outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() +"/eSalud/"+fecha+".mp3";
-            Toast.makeText(MainActivity.this, outputFile, Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(MainActivity.this, "Failed - Error", Toast.LENGTH_SHORT).show();
-        }
-
-
-        grabacion = new MediaRecorder();
-        grabacion.setAudioSource(MediaRecorder.AudioSource.MIC);
-        grabacion.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        grabacion.setAudioEncoder(MediaRecorder.OutputFormat.MPEG_4);
-        grabacion.setOutputFile(outputFile);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        final MediaRecorder grabacion;
-        String outputFile = new String();
         // Prepare Cloud Speech API
         bindService(new Intent(this, SpeechService.class), mServiceConnection, BIND_AUTO_CREATE);
-        //agregar fecha para identificar los diferentes audios
-        final Date fecha = new Date();
+
+        fecha = new Date();
 
         File folder = new File(Environment.getExternalStorageDirectory() + "/eSalud");
         boolean success = true;
@@ -216,8 +191,8 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
             success = folder.mkdir();
         }
         if (success) {
-             outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() +"/eSalud/"+fecha+".mp3";
-            //Toast.makeText(getActivity(), outputFile, Toast.LENGTH_SHORT).show();
+            outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() +"/eSalud/"+fecha+".mp3";
+            //Toast.makeText(MainActivity.this, outputFile, Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(MainActivity.this, "Failed - Error", Toast.LENGTH_SHORT).show();
         }
@@ -228,7 +203,6 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         grabacion.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         grabacion.setAudioEncoder(MediaRecorder.OutputFormat.MPEG_4);
         grabacion.setOutputFile(outputFile);
-
         // Start listening to voices
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -244,7 +218,6 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                     try {
                         grabacion.prepare();
                         grabacion.start();
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
