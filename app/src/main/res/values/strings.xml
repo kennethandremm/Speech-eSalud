@@ -16,7 +16,7 @@
 <resources>
     <string name="app_name">Speech</string>
     <string name="permission_message">This app needs to record audio and recognize your speech.</string>
-    <string name="listening">Listening…</string>
+    <string name="listening">Presiona para escuchar al paciente...</string>
 
     <string name="sign_in_cancelled">Se ha cancelado el inicio de sesion.</string>
     <string name="no_internet_connection">No posee conexión a internet</string>

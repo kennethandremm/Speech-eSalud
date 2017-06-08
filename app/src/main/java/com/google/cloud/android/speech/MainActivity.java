@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
 
         final Resources resources = getResources();
         final Resources.Theme theme = getTheme();
-        mColorHearing = ResourcesCompat.getColor(resources, R.color.status_hearing, theme);
+        mColorHearing = ResourcesCompat.getColor(resources, R.color.accent, theme);
         mColorNotHearing = ResourcesCompat.getColor(resources, R.color.status_not_hearing, theme);
         btnRec = (CircleButton)findViewById(R.id.btnRec);
         btnStop = (CircleButton)findViewById(R.id.btnStop);
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
     protected void onStop() {
 
         // Stop listening to voice
-
+        stopVoiceRecorder();
         // Stop Cloud Speech API
         mSpeechService.removeListener(mSpeechServiceListener);
         unbindService(mServiceConnection);
@@ -230,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
             @Override
             public void run() {
                 mStatus.setTextColor(hearingVoice ? mColorHearing : mColorNotHearing);
+                mStatus.setText(hearingVoice ? "Estoy escuchando al paciente..." : "Presiona para escuchar al paciente...");
             }
         });
     }
