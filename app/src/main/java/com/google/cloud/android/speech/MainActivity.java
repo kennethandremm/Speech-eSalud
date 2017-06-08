@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                     View sbView = snackbar.getView();
                     sbView.setBackgroundColor(getResources().getColor(R.color.primary));
                     snackbar.show();
+                    btnStop.setEnabled(true);
                     return false;
                 }
             });
@@ -214,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
 
                     mStatus.setTextColor(mColorNotHearing);
                     mStatus.setText("Presiona para escuchar al paciente...");
+                    btnStop.setEnabled(false);
                 }
             });
 
