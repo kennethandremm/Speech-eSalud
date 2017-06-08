@@ -28,6 +28,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -172,33 +173,45 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                     View sbView = snackbar.getView();
                     sbView.setBackgroundColor(getResources().getColor(R.color.primary));
                     snackbar.show();
-                    ProgressDialog alertDialog = new ProgressDialog(MainActivity.this);
+
+                    final ProgressDialog alertDialog = new ProgressDialog(MainActivity.this);
                     alertDialog.setMessage("Consultando a Watson");
                     alertDialog.setCancelable(true);
                     alertDialog.show();
 
-                    AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
-                    builder1.setMessage("El paciente es diagnosticado con: ");
-                    builder1.setCancelable(true);
+                    Runnable progressRunnable = new Runnable() {
 
-                    builder1.setPositiveButton(
-                            "Aceptar",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
+                        @Override
+                        public void run() {
+                            AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
+                            builder1.setMessage("El paciente es diagnosticado con: ");
+                            builder1.setCancelable(true);
 
-                    builder1.setNegativeButton(
-                            "Reintentar",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
+                            builder1.setPositiveButton(
+                                    "Aceptar",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            dialog.cancel();
+                                        }
+                                    });
 
-                    AlertDialog alert11 = builder1.create();
-                    alert11.show();
+                            builder1.setNegativeButton(
+                                    "Reintentar",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            dialog.cancel();
+                                        }
+                                    });
+
+                            AlertDialog alert11 = builder1.create();
+                            alert11.show();
+                            alertDialog.cancel();
+                        }
+                    };
+
+                    Handler pdCanceller = new Handler();
+                    pdCanceller.postDelayed(progressRunnable, 3000);
+
                     mStatus.setTextColor(mColorNotHearing);
                     mStatus.setText("Presiona para escuchar al paciente...");
                 }
